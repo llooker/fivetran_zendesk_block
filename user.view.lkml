@@ -1,5 +1,8 @@
+
+
 view: user {
   sql_table_name: zendesk.user ;;
+  extension: required
 
   dimension: id {
     primary_key: yes
@@ -7,38 +10,9 @@ view: user {
     sql: ${TABLE}.id ;;
   }
 
-  dimension_group: _fivetran_synced {
-    type: time
-    timeframes: [
-      raw,
-      time,
-      date,
-      week,
-      month,
-      quarter,
-      year
-    ]
-    sql: ${TABLE}._fivetran_synced ;;
-  }
-
   dimension: active {
     type: yesno
     sql: ${TABLE}.active ;;
-  }
-
-  dimension: alias {
-    type: string
-    sql: ${TABLE}.alias ;;
-  }
-
-  dimension: authenticity_token {
-    type: string
-    sql: ${TABLE}.authenticity_token ;;
-  }
-
-  dimension: chat_only {
-    type: yesno
-    sql: ${TABLE}.chat_only ;;
   }
 
   dimension_group: created {
@@ -55,16 +29,6 @@ view: user {
     sql: ${TABLE}.created_at ;;
   }
 
-  dimension: custom_lead_or_contact_first_name {
-    type: string
-    sql: ${TABLE}.custom_lead_or_contact_first_name ;;
-  }
-
-  dimension: custom_role_id {
-    type: number
-    sql: ${TABLE}.custom_role_id ;;
-  }
-
   dimension: details {
     type: string
     sql: ${TABLE}.details ;;
@@ -78,35 +42,6 @@ view: user {
   dimension: external_id {
     type: string
     sql: ${TABLE}.external_id ;;
-  }
-
-  dimension_group: last_login {
-    type: time
-    timeframes: [
-      raw,
-      time,
-      date,
-      week,
-      month,
-      quarter,
-      year
-    ]
-    sql: ${TABLE}.last_login_at ;;
-  }
-
-  dimension: locale {
-    type: string
-    sql: ${TABLE}.locale ;;
-  }
-
-  dimension: locale_id {
-    type: number
-    sql: ${TABLE}.locale_id ;;
-  }
-
-  dimension: moderator {
-    type: yesno
-    sql: ${TABLE}.moderator ;;
   }
 
   dimension: name {
@@ -140,11 +75,6 @@ view: user {
     sql: ${TABLE}.remote_photo_url ;;
   }
 
-  dimension: restricted_agent {
-    type: yesno
-    sql: ${TABLE}.restricted_agent ;;
-  }
-
   dimension: role {
     type: string
     sql: ${TABLE}.role ;;
@@ -155,19 +85,9 @@ view: user {
     sql: ${TABLE}.shared ;;
   }
 
-  dimension: shared_agent {
-    type: yesno
-    sql: ${TABLE}.shared_agent ;;
-  }
-
   dimension: signature {
     type: string
     sql: ${TABLE}.signature ;;
-  }
-
-  dimension: suspended {
-    type: yesno
-    sql: ${TABLE}.suspended ;;
   }
 
   dimension: ticket_restriction {
@@ -178,11 +98,6 @@ view: user {
   dimension: time_zone {
     type: string
     sql: ${TABLE}.time_zone ;;
-  }
-
-  dimension: two_factor_auth_enabled {
-    type: yesno
-    sql: ${TABLE}.two_factor_auth_enabled ;;
   }
 
   dimension_group: updated {
@@ -213,20 +128,90 @@ view: user {
     type: count
     drill_fields: [detail*]
   }
-
-  # ----- Sets of fields for drilling ------
-  set: detail {
-    fields: [
-      id,
-      custom_lead_or_contact_first_name,
-      name,
-      organization.name,
-      organization.id,
-      group_member.count,
-      organization_member.count,
-      ticket_comment.count,
-      ticket_field_history.count,
-      ticket_tag_history.count
-    ]
-  }
 }
+view: assignee {
+  extends: [user]
+
+  dimension: chat_only {
+    type: yesno
+    sql: ${TABLE}.chat_only ;;
+  }
+
+  dimension: custom_role_id {
+    type: number
+    sql: ${TABLE}.custom_role_id ;;
+  }
+
+  dimension: moderator {
+    type: yesno
+    sql: ${TABLE}.moderator ;;
+  }
+
+  dimension: shared_agent {
+    type: yesno
+    sql: ${TABLE}.shared_agent ;;
+  }
+
+  dimension: restricted_agent {
+    type: yesno
+    sql: ${TABLE}.restricted_agent ;;
+  }
+
+}
+
+view: requester {
+  extends: [user]
+  # The user who is asking for support through a ticket is the requester.
+
+  dimension: locale {
+    type: string
+    sql: ${TABLE}.locale ;;
+  }
+
+  dimension_group: last_login {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: ${TABLE}.last_login_at ;;
+  }
+
+  dimension: two_factor_auth_enabled {
+    type: yesno
+    sql: ${TABLE}.two_factor_auth_enabled ;;
+  }
+
+  dimension: suspended {
+    type: yesno
+    sql: ${TABLE}.suspended ;;
+  }
+
+}
+
+# The submitter is the user who created a ticket.
+
+
+
+# not relevant
+
+
+#   dimension: alias {
+#     type: string
+#     sql: ${TABLE}.alias ;;
+#   }
+#
+#   dimension: authenticity_token {
+#     type: string
+#     sql: ${TABLE}.authenticity_token ;;
+#   }
+#
+#   dimension: locale_id {
+#     type: number
+#     sql: ${TABLE}.locale_id ;;
+#   }
