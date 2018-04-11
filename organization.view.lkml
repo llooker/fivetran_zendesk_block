@@ -1,63 +1,21 @@
 view: organization {
   sql_table_name: zendesk.organization ;;
 
+  # Just as agents can be segmented into groups in Zendesk Support, your customers (end-users)
+  # can be segmented into organizations. You can manually assign customers to an organization
+  # or automatically assign them to an organization by their email address domain. Organizations
+  # can be used in business rules to route tickets to groups of agents or to send email notifications.
+
   dimension: id {
     primary_key: yes
     type: number
     sql: ${TABLE}.id ;;
-  }
-
-  dimension_group: _fivetran_synced {
-    type: time
-    timeframes: [
-      raw,
-      time,
-      date,
-      week,
-      month,
-      quarter,
-      year
-    ]
-    sql: ${TABLE}._fivetran_synced ;;
-  }
-
-  dimension_group: created {
-    type: time
-    timeframes: [
-      raw,
-      time,
-      date,
-      week,
-      month,
-      quarter,
-      year
-    ]
-    sql: ${TABLE}.created_at ;;
-  }
-
-  dimension: custom_account_type {
-    type: string
-    sql: ${TABLE}.custom_account_type ;;
-  }
-
-  dimension: custom_company {
-    type: string
-    sql: ${TABLE}.custom_company ;;
-  }
-
-  dimension: details {
-    type: string
-    sql: ${TABLE}.details ;;
-  }
-
-  dimension: external_id {
-    type: string
-    sql: ${TABLE}.external_id ;;
+    hidden: yes
   }
 
   dimension: group_id {
     type: number
-    # hidden: yes
+    hidden: yes
     sql: ${TABLE}.group_id ;;
   }
 
@@ -71,33 +29,9 @@ view: organization {
     sql: ${TABLE}.notes ;;
   }
 
-  dimension: shared_comments {
-    type: yesno
-    sql: ${TABLE}.shared_comments ;;
-  }
-
-  dimension: shared_tickets {
-    type: yesno
-    sql: ${TABLE}.shared_tickets ;;
-  }
-
-  dimension_group: updated {
-    type: time
-    timeframes: [
-      raw,
-      time,
-      date,
-      week,
-      month,
-      quarter,
-      year
-    ]
-    sql: ${TABLE}.updated_at ;;
-  }
-
-  dimension: url {
+  dimension: details {
     type: string
-    sql: ${TABLE}.url ;;
+    sql: ${TABLE}.details ;;
   }
 
   measure: count {
@@ -105,7 +39,7 @@ view: organization {
     drill_fields: [detail*]
   }
 
-  # ----- Sets of fields for drilling ------
+# ----- Sets of fields for drilling ------
   set: detail {
     fields: [
       id,
@@ -118,4 +52,52 @@ view: organization {
       user.count
     ]
   }
+
+#   dimension: external_id {
+#     type: string
+#     sql: ${TABLE}.external_id ;;
+#   }
+#
+#   dimension: shared_comments {
+#     type: yesno
+#     sql: ${TABLE}.shared_comments ;;
+#   }
+#
+#   dimension: shared_tickets {
+#     type: yesno
+#     sql: ${TABLE}.shared_tickets ;;
+#   }
+#
+#   dimension_group: updated {
+#     type: time
+#     timeframes: [
+#       raw,
+#       time,
+#       date,
+#       week,
+#       month,
+#       quarter,
+#       year
+#     ]
+#     sql: ${TABLE}.updated_at ;;
+#   }
+#
+#   dimension_group: created {
+#     type: time
+#     timeframes: [
+#       raw,
+#       time,
+#       date,
+#       week,
+#       month,
+#       quarter,
+#       year
+#     ]
+#     sql: ${TABLE}.created_at ;;
+#   }
+#
+#   dimension: url {
+#     type: string
+#     sql: ${TABLE}.url ;;
+#   }
 }

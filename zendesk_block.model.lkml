@@ -9,6 +9,7 @@ datagroup: zendesk_block_default_datagroup {
 persist_with: zendesk_block_default_datagroup
 
 explore: ticket {
+#   from: chat_fields
   join: assignee {
     sql_on: ${ticket.assignee_id} = ${assignee.id} ;;
     relationship: many_to_one
@@ -19,19 +20,59 @@ explore: ticket {
     relationship: many_to_one
   }
 
-  join: group {
-    sql_on: ${ticket.group_id} = ${group.id} ;;
+  join: group_member {
+    sql_on: ${assignee.id} = ${group_member.user_id} ;;
     relationship: many_to_one
   }
 
-  join: group_member {
-    sql_on: ${group.id} = ${group_member.group_id} ;;
-    relationship: one_to_many
+  join: group {
+    sql_on: ${group_member.group_id} = ${group.id} ;;
+    relationship: many_to_one
+  }
+
+  join: organization_member {
+    sql_on: ${requester.id} = ${organization_member.user_id} ;;
+    relationship: many_to_one
   }
 
   join: organization {
-    sql_on: ${ticket.organization_id} = ${organization.id} ;;
+    sql_on: ${organization_member.organization_id} = ${organization.id} ;;
     relationship: many_to_one
+  }
+
+  join: brand {
+    type: left_outer
+    sql_on: ${ticket.brand_id} = ${brand.id} ;;
+    relationship: many_to_one
+  }
+
+  # metric queries
+
+  join: ticket_history_facts {
+    sql_on: ${ticket.id} = ${ticket_history_facts.ticket_id} ;;
+    relationship: one_to_one
+  }
+#   join: last_updated_by_assignee {
+#     view_label: "Ticket"
+#     sql_on: ${ticket.id} = ${last_updated_by_assignee.ticket_id} ;;
+#     relationship: one_to_one
+#   }
+#
+#   join: last_updated_by_requester {
+#     view_label: "Ticket"
+#     sql_on: ${ticket.id} = ${last_updated_by_requester.ticket_id} ;;
+#     relationship: one_to_one
+#   }
+#
+#   join: number_of_assignees {
+#     view_label: "Ticket"
+#     sql_on: ${ticket.id} = ${number_of_assignees.ticket_id} ;;
+#     relationship: one_to_one
+#   }
+
+  join: number_of_reopens {
+    sql_on: ${ticket.id} = ${number_of_reopens.ticket_id} ;;
+    relationship: one_to_one
   }
 
 #   join: ticket_assignee_facts {
@@ -47,18 +88,6 @@ explore: ticket {
 #     relationship: one_to_many
 #     fields: [ticket_id, new_value, total_agent_touches]
 #   }
-
-  join: forum_topic {
-    type: left_outer
-    sql_on: ${ticket.forum_topic_id} = ${forum_topic.id} ;;
-    relationship: many_to_one
-  }
-
-  join: brand {
-    type: left_outer
-    sql_on: ${ticket.brand_id} = ${brand.id} ;;
-    relationship: many_to_one
-  }
 }
 
 #
@@ -117,13 +146,6 @@ explore: ticket {
 #     relationship: many_to_one
 #   }
 # }
-#
-# explore: organization_tag {
-#   join: organization {
-#     type: left_outer
-#     sql_on: ${organization_tag.organization_id} = ${organization.id} ;;
-#     relationship: many_to_one
-#   }
 #
 #   join: group {
 #     type: left_outer
