@@ -46,6 +46,23 @@ explore: ticket {
     relationship: many_to_one
   }
 
+  join: ticket_comment {
+    type: left_outer
+    sql_on: ${ticket.id} = ${ticket_comment.ticket_id} ;;
+    relationship: one_to_many
+  }
+
+  join: commenter {
+    sql_on: ${ticket_comment.user_id} = ${commenter.id} ;;
+    relationship: many_to_one
+  }
+
+  join: ticket_assignee_facts {
+    type: left_outer
+    sql_on: ${ticket.assignee_id} = ${ticket_assignee_facts.assignee_id} ;;
+    relationship: many_to_one
+  }
+
   # metric queries
 
   join: ticket_history_facts {

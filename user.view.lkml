@@ -1,5 +1,7 @@
+include: "_variables.view"
 
 view: user {
+  extends: [_variables]
   sql_table_name: zendesk.user ;;
   extension: required
 
@@ -21,7 +23,7 @@ view: user {
   }
 
   dimension: name {
-    label: "{% if  _view._name == 'assignee' %} {{'Assignee Name'}} {% else %} {{ 'Requester Name'}} {% endif %} "
+    label: "{% if  _view._name == 'assignee' %} {{'Assignee Name'}} {% elsif _view._name == 'commenter' %} {{ 'Commenter Name'}} {% else %} {{ 'Requester Name'}} {% endif %} "
     type: string
     sql: ${TABLE}.name ;;
   }
@@ -29,6 +31,16 @@ view: user {
   measure: count {
     type: count
     drill_fields: [detail*]
+  }
+}
+
+view: commenter {
+  extends: [user]
+
+  dimension: is_internal {
+    type: yesno
+    description: "Is an internal user?"
+    sql: ${organization_id} = ${_INTERNAL_ORGANIZATION_ID} ;;
   }
 }
 
@@ -53,6 +65,21 @@ view: assignee {
   dimension: restricted_agent {
     type: yesno
     sql: ${TABLE}.restricted_agent ;;
+  }
+
+  # ----- agent comparison fields -----
+  filter: agent_select {
+    view_label: "Zendesk Ticket"
+    suggest_dimension: name
+  }
+
+  dimension: agent_comparitor {
+    sql:
+    CASE
+      WHEN {% condition agent_select %} ${name} {% endcondition %}
+      THEN ${name}
+      ELSE 'All Other Agents'
+    END ;;
   }
 }
 

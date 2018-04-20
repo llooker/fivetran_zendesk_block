@@ -9,10 +9,17 @@ view: ticket {
     primary_key: yes
     type: number
     sql: ${TABLE}.id ;;
+    html: <img src="http://www.google.com/s2/favicons?domain=www.zendesk.com" height=16 width=16> {{ value }} ;;
     link: {
       label: "Zendesk Ticket"
       url: "https://{{ ticket._ZENDESK_INSTANCE_DOMAIN._value }}.zendesk.com/agent/tickets/{{ value }}"
       icon_url: "https://d1eipm3vz40hy0.cloudfront.net/images/logos/zendesk-favicon.ico"
+    }
+    link: {
+      label: "Zendesk Ticket Detail"
+      url: "https://{{ ticket._LOOKER_INSTANCE_DOMAIN._value }}.looker.com/dashboards/{{ ticket._ZENDESK_TICKET_DETAIL_DASHBOARD_ID._value }}?Ticket={{ value }}"
+      icon_url: "http://www.looker.com/favicon.ico"
+
     }
   }
 
@@ -40,8 +47,26 @@ view: ticket {
 
   dimension: priority {
     type: string
-    sql: ${TABLE}.priority ;;
+    sql: case when LOWER(${TABLE}.priority) = 'low' then '2 - Low'
+          when LOWER(${TABLE}.priority) = 'normal' then '3 - Normal'
+          when LOWER(${TABLE}.priority) = 'high' then '4 - High'
+          when LOWER(${TABLE}.priority) = 'urgent' then '5 - Urgent'
+          when LOWER(${TABLE}.priority) is null then '1 - Not Assigned' end ;;
     description: "The urgency with which the ticket should be addressed. Possible values: urgent, high, normal, low"
+    html: {% if value == '1 - Not Assigned' %}
+            <div style="color: black; background-color: grey; font-size:100%; text-align:center">{{ rendered_value }}</div>
+          {% elsif value == '2 - Low' %}
+            <div style="color: black; background-color: lightgreen; font-size:100%; text-align:center">{{ rendered_value }}</div>
+          {% elsif value == '3 - Normal' %}
+            <div style="color: black; background-color: yellow; font-size:100%; text-align:center">{{ rendered_value }}</div>
+          {% elsif value == '4 - High' %}
+            <div style="color: white; background-color: darkred; font-size:100%; text-align:center">{{ rendered_value }}</div>
+          {% elsif value == '5 - Urgent' %}
+            <div style="color: white; background-color: black; font-size:100%; text-align:center">{{ rendered_value }}</div>
+          {% else %}
+            <div style="color: black; background-color: blue; font-size:100%; text-align:center">{{ rendered_value }}</div>
+          {% endif %}
+    ;;
   }
 
   dimension: recipient {
@@ -148,10 +173,36 @@ view: ticket {
     sql: 1.00 * DATE_DIFF(${ticket_history_facts.solved_date}, ${created_date}, DAY) ;;
   }
 
-#   dimension: hours_to_solve {
-#     type: number
-#     sql: 1.00 * DATETIME_DIFF(${ticket_history_facts.solved_raw}, ${created_raw}, HOUR) ;;
-#   }
+  dimension: days_to_first_response {
+    type: number
+    sql: 1.00 * DATE_DIFF(${ticket_history_facts.first_response_date}, ${created_date}, DAY) ;;
+  }
+
+  dimension: minutes_to_first_response {
+    type: number
+    sql: 1.00 * DATETIME_DIFF(EXTRACT(DATETIME FROM ${ticket_history_facts.first_response_raw}), EXTRACT(DATETIME FROM ${created_raw}), MINUTE) ;;
+  }
+
+  dimension: hours_to_solve {
+    type: number
+    sql: 1.00 * DATETIME_DIFF(${ticket_history_facts.solved_raw}, ${created_raw}, HOUR) ;;
+  }
+
+  dimension: is_responded_to {
+    type: yesno
+    sql: ${minutes_to_first_response} is not null ;;
+  }
+
+  dimension: days_since_updated {
+    type: number
+    sql: 1.00 * DATE_DIFF(${_CURRENT_DATE}, ${last_updated_date}, DAY)  ;;
+    html: {% if value > 60 %}
+            <div style="color: white; background-color: darkred; font-size:100%; text-align:center">{{ rendered_value }}</div>
+          {% else %}
+            <div style="color: black; background-color: yellow; font-size:100%; text-align:center">{{ rendered_value }}</div>
+          {% endif %}
+      ;;
+  }
 
   measure: avg_days_to_solve {
     type: average
@@ -183,6 +234,7 @@ view: ticket {
     sql: ${status} = 'solved' OR ${status} = 'closed' ;;
   }
 
+
   dimension: subject_category {
     sql: CASE
       WHEN ${subject} LIKE 'Chat%' THEN 'Chat'
@@ -194,6 +246,7 @@ view: ticket {
   }
 
   measure: count_backlogged_tickets {
+    group_label: "Counts"
     type: count
     filters: {
       field: is_backlogged
@@ -203,6 +256,7 @@ view: ticket {
   }
 
   measure: count_new_tickets {
+    group_label: "Counts"
     type: count
     filters: {
       field: is_new
@@ -212,6 +266,7 @@ view: ticket {
   }
 
   measure: count_open_tickets {
+    group_label: "Counts"
     type: count
     filters: {
       field: is_open
@@ -221,6 +276,7 @@ view: ticket {
   }
 
   measure: count_solved_tickets {
+    group_label: "Counts"
     type: count
     filters: {
       field: is_solved
@@ -229,8 +285,16 @@ view: ticket {
     drill_fields: [detail*]
   }
 
+  measure: avg_minutes_to_response {
+    type: average
+    sql: ${minutes_to_first_response} ;;
+    value_format_name: decimal_0
+  }
+
+
   # ----- measures ------
   measure: count {
+    group_label: "Counts"
     type: count
     drill_fields: [detail*]
   }
