@@ -32,6 +32,14 @@ view: _variables {
     sql: 6 ;;
   }
 
+# Once you convert the Dashboard from LookML, the ID of the Zendesk Ticket Detail Dashboard
+# Update sql value below
+  dimension: _ZENDESK_AGENT_PERFORMANCE_DASHBOARD_ID {
+    type: number
+    hidden: yes
+    sql: 8 ;;
+  }
+
 # Name of your organization ID in Zendesk instance
 # Update sql value below
   dimension: _INTERNAL_ORGANIZATION_ID {
@@ -40,7 +48,8 @@ view: _variables {
     sql: 27173710 ;;
   }
 
-
+# Ticket Status Names in Zendesk
+# These are unlikely to be different for your organization, but are here in case Zendesk changes any language.
   dimension: _TICKET_STATUS_CLOSED {
     type: string
     hidden: yes
@@ -78,6 +87,8 @@ view: _variables {
   }
 
 # ----- Dialect Variables -----
+# Used for easy block implementation when using dialects other than Big Query.
+
   dimension: _CURRENT_DATE {
     type: date
     hidden: yes

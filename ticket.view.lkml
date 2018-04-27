@@ -19,8 +19,14 @@ view: ticket {
       label: "Zendesk Ticket Detail"
       url: "https://{{ ticket._LOOKER_INSTANCE_DOMAIN._value }}.looker.com/dashboards/{{ ticket._ZENDESK_TICKET_DETAIL_DASHBOARD_ID._value }}?Ticket={{ value }}"
       icon_url: "http://www.looker.com/favicon.ico"
-
     }
+  }
+
+  dimension: id_direct_link {
+    type: number
+    sql: ${id} ;;
+    html: <a href="https://{{ ticket._ZENDESK_INSTANCE_DOMAIN._value }}.zendesk.com/agent/tickets/{{ value }}" target="_blank"><img src="http://www.google.com/s2/favicons?domain=www.zendesk.com" height=16 width=16> {{ value }}</a> ;;
+    hidden: yes
   }
 
   dimension: allow_channelback {

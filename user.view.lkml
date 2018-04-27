@@ -47,6 +47,17 @@ view: commenter {
 view: assignee {
   extends: [user]
 
+  dimension: name {
+    label: "{% if  _view._name == 'assignee' %} {{'Assignee Name'}} {% elsif _view._name == 'commenter' %} {{ 'Commenter Name'}} {% else %} {{ 'Requester Name'}} {% endif %} "
+    type: string
+    sql: ${TABLE}.name ;;
+    link: {
+      label: "{{ value }}'s Dashboard"
+      url: "https://{{ ticket._LOOKER_INSTANCE_DOMAIN._value }}.looker.com/dashboards/{{ ticket._ZENDESK_AGENT_PERFORMANCE_DASHBOARD_ID._value }}?Agent%20Name={{ value }}"
+      icon_url: "http://www.looker.com/favicon.ico"
+    }
+  }
+
   dimension: chat_only {
     type: yesno
     sql: ${TABLE}.chat_only ;;
@@ -69,18 +80,37 @@ view: assignee {
 
   # ----- agent comparison fields -----
   filter: agent_select {
-    view_label: "Zendesk Ticket"
-    suggest_dimension: name
+    view_label: "Agent Comparisons"
+    suggest_dimension: user.name
   }
 
   dimension: agent_comparitor {
+    view_label: "Agent Comparisons"
     sql:
     CASE
       WHEN {% condition agent_select %} ${name} {% endcondition %}
       THEN ${name}
-      ELSE 'All Other Agents'
+      ELSE CONCAT(' ', 'All Other Agents')
     END ;;
   }
+
+# # ----- comparison -----
+#   filter: agent_select {
+#     view_label: "Agent Comparisons"
+#     suggest_dimension: name
+#   }
+#
+#   dimension: rep_comparitor {
+#     view_label: "Agent Comparisons"
+#     description: "Use in conjunction with agent select filter to compare to other agents"
+#     sql: CASE
+#         WHEN {% condition agent_select %} ${name} {% endcondition %}
+#           THEN CONCAT('1 - ', ${name})
+#       ELSE '2 - Rest of Agents'
+#       END
+#        ;;
+#   }
+#
 }
 
 view: requester {
