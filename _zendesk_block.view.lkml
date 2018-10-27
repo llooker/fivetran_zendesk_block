@@ -846,7 +846,7 @@ view: ticket_history_facts {
           SELECT ticket_id, created, row_number() over (partition by ticket_id order by created asc) as comment_sequence
           FROM zendesk.ticket_comment
       ) tc on tc.ticket_id = tfh.ticket_id and tc.comment_sequence = 2
-      GROUP BY ticket_id, tc.created ;;
+      GROUP BY tfh.ticket_id, tc.created ;;
   }
 
   dimension_group: first_response {
