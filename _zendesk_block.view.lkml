@@ -176,22 +176,22 @@ view: ticket {
 
   dimension: days_to_solve {
     type: number
-    sql: 1.00 * DATE_DIFF(${ticket_history_facts.solved_date}, ${created_date}, DAY) ;;
+    sql: 1.00 * DATEDIFF(day, ${created_date}, ${ticket_history_facts.solved_date}) ;;
   }
 
   dimension: days_to_first_response {
     type: number
-    sql: 1.00 * DATE_DIFF(${ticket_history_facts.first_response_date}, ${created_date}, DAY) ;;
+    sql: 1.00 * DATEDIFF(day, ${created_date}, ${ticket_history_facts.first_response_date}) ;;
   }
 
   dimension: minutes_to_first_response {
     type: number
-    sql: 1.00 * DATETIME_DIFF(EXTRACT(DATETIME FROM ${ticket_history_facts.first_response_raw}), EXTRACT(DATETIME FROM ${created_raw}), MINUTE) ;;
+    sql: 1.00 * DATEDIFF(minute, ${created_raw}, ${ticket_history_facts.first_response_raw}) ;;
   }
-
+  
   dimension: hours_to_solve {
     type: number
-    sql: 1.00 * DATETIME_DIFF(${ticket_history_facts.solved_raw}, ${created_raw}, HOUR) ;;
+    sql: 1.00 * DATEDIFF(hour, ${created_raw}, ${ticket_history_facts.solved_raw}) ;;
   }
 
   dimension: is_responded_to {
@@ -201,7 +201,7 @@ view: ticket {
 
   dimension: days_since_updated {
     type: number
-    sql: 1.00 * DATE_DIFF(${_CURRENT_DATE}, ${last_updated_date}, DAY)  ;;
+    sql: 1.00 * DATEDIFF(day, ${last_updated_date}, ${_CURRENT_DATE})  ;;
     html: {% if value > 60 %}
             <div style="color: white; background-color: darkred; font-size:100%; text-align:center">{{ rendered_value }}</div>
           {% else %}
@@ -830,7 +830,7 @@ view: ticket_history_facts {
   derived_table: {
     sql: SELECT
           tfh.ticket_id
-          ,IFNULL(tc.created, MAX(case when field_name = 'status' and value = 'solved' then updated else null end)) as first_response
+          ,COALESCE(tc.created, MAX(case when field_name = 'status' and value = 'solved' then updated else null end)) as first_response
           ,MAX(case when field_name = 'status' then updated else null end) AS last_updated_status
           ,MAX(case when field_name = 'assignee_id' then updated else null end) AS last_updated_by_assignee
           ,MAX(case when field_name = 'requester_id' then updated else null end) AS last_updated_by_requester
@@ -1100,7 +1100,7 @@ view: ticket_assignee_facts {
         , count(*) as lifetime_tickets
         , min(created_at) as first_ticket
         , max(created_at) as latest_ticket
-        , 1.0 * COUNT(*) / NULLIF(DATE_DIFF(CURRENT_DATE, MIN(EXTRACT(date from created_at)), day), 0) AS avg_tickets_per_day
+        , 1.0 * COUNT(*) / COALESCE(DATEDIFF(day, MIN(created_at), CURRENT_DATE), 0) AS avg_tickets_per_day
       FROM zendesk.ticket
       GROUP BY 1
        ;;
