@@ -1044,9 +1044,9 @@ view: number_of_reopens {
          statuses AS (
             SELECT
                 ticket_id,
-                LAG(ticket_id, 1, 0) OVER(ORDER BY ticket_id, updated) AS prev_ticket_id,
+                COALESCE(LAG(ticket_id, 1) OVER(ORDER BY ticket_id, updated), 0) AS prev_ticket_id,
                 value AS status,
-                LAG(value, 1, 'new') OVER(ORDER BY ticket_id, updated) AS prev_status
+                COALESCE(LAG(value, 1) OVER(ORDER BY ticket_id, updated), 'new') AS prev_status
             FROM grouped_ticket_status_history
          )
          SELECT
