@@ -725,7 +725,7 @@ view: organization_member {
 
 view: group {
   view_label: "Organization"
-  sql_table_name: zendesk.`group` ;;
+  sql_table_name: zendesk.group ;;
 
   # When support requests arrive in Zendesk Support, they can be assigned to a Group.
   # Groups serve as the core element of ticket workflow; support agents are organized into
