@@ -92,7 +92,7 @@ view: _variables {
   dimension: _CURRENT_DATE {
     type: date
     hidden: yes
-    sql: CURRENT_DATE() ;;
+    sql: CURRENT_DATE ;;
   }
 
 }
