@@ -1,4 +1,4 @@
-connection: "fivetran_looker_blocks_demo"
+connection: "shippit_snowflake"
 
 include: "*_zendesk_block.view"
 include: "*_zendesk_variables.view"
